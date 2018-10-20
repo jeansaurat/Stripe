@@ -1,0 +1,62 @@
+Using paiement.php file, following errors arise :
+- from time to time, using "production" API, paiement is fully accomplished (about once per 10 times). Confirmation paiement mail from issued Stripe to customer never sent.
+- most of the time, paiement page just restart : blue button "Pay" becomes grey for 1 or 2 seconds, and then back to blue, page recharge without any error message.
+on Stripe/dashboard/Developpers/Log with "Viewing test data" checked, transaction shows with following details:
+
+Request POST body
+{
+  "email": "jeansaurat@wanadoo.fr",
+  "validation_type": "card",
+  "payment_user_agent": "Stripe Checkout v3 checkout-manhattan (stripe.js/9dc17ab)",
+  "referrer": "https://marie-verveine.com/cart/paiement.php",
+  "recaptcha_token": "03AMGVjXiEO84NeLydztGfCb8MLM22sXxczLuZTO3v685_IwDVIHMguRBbVBLqUHVZ9mjc5RALszjLg1BBpKjO0ulGZ2S_DQGlUhputH5y6xaqK6h2Xafn-BoElkYY2korpa9tK73lgqEgHPYkoHEXO-w7Vf4RuXMrH0li3H4A7ySJBlHh_TpN6uOoNjpCWoSSOXE5ixswaPmZ39LTQ_P-od1CymT7zTh7DArErPBc8x1Dy9Si07u-8DNepPO2ib0Qp7iBRT1AmrLn6npNM7onTnnX6FkZRgWJSOR-4KUGUHY9xa6_0LK33QU",
+  "card": {
+    "number": "************4242",
+    "exp_month": "12",
+    "exp_year": "20",
+    "cvc": "***",
+    "name": "jeansaurat@wanadoo.fr"
+  },
+  "time_on_page": "16004",
+  "guid": "02579719-72f0-4aee-92bb-3feca6d0cabf",
+  "muid": "aa8a1a16-36d6-4138-b0ab-68412ad03ae7",
+  "sid": "4abe5315-187a-482d-8b27-e1812150a540",
+  "key": "pk_test_KpHVAr6m72HMLxadGOGI8YG9"
+}
+
+Response body
+
+{
+  "id": "tok_1DND75CGXqqzGIOCYeIH1DFn",
+  "object": "token",
+  "card": {
+    "id": "card_1DND74CGXqqzGIOCqKbkoTJG",
+    "object": "card",
+    "address_city": null,
+    "address_country": null,
+    "address_line1": null,
+    "address_line1_check": null,
+    "address_line2": null,
+    "address_state": null,
+    "address_zip": null,
+    "address_zip_check": null,
+    "brand": "Visa",
+    "country": "US",
+    "cvc_check": "pass",
+    "dynamic_last4": null,
+    "exp_month": 12,
+    "exp_year": 2020,
+    "funding": "credit",
+    "last4": "4242",
+    "metadata": {
+    },
+    "name": "jeansaurat@wanadoo.fr",
+    "tokenization_method": null
+  },
+  "client_ip": "46.162.165.87",
+  "created": 1540013703,
+  "email": "jeansaurat@wanadoo.fr",
+  "livemode": false,
+  "type": "card",
+  "used": false
+}
