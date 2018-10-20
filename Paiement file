@@ -1,0 +1,122 @@
+<?php
+require('config.php');
+?>
+
+<script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+
+<?php
+
+// Set the order amount :
+$amount = $_SESSION["total_commande"] * 100; // in cents, from previous purchase pages
+// Set email
+$email = $_SESSION["client_mail"]; // from joomla session
+
+// Check for a form submission:
+if ($_SERVER['REQUEST_METHOD'] == 'POST')
+{
+	// Stores errors:
+	$errors = array();
+
+	// Need a payment token:
+	if (isset($_POST['stripeToken']))
+	{
+		$token = $_POST['stripeToken'];
+		// Check for a duplicate submission, just in case:
+		if (isset($_SESSION['token']) && ($_SESSION['token'] == $token))
+		{
+			$errors['token'] = 'Vous avez apparemment envoyé deux fois le même paiement! S\'il vous plaît, ne recommencez pas. Merci.';
+		}
+		else
+		{ // New submission.
+			$_SESSION['token'] = $token;
+		}
+	}
+	else
+	{
+		$errors['token'] = 'Le paiement n\'a pas pu être exécuté. Assurez-vous que JavaScript est bien activé sur votre ordinateur. Voir https://www.enable-javascript.com/fr/'; // javascript may not be installed
+	}
+	// If no errors, process the order:
+	if (empty($errors))
+	{	
+		// create the charge on Stripe's servers - this will charge the user's card
+		try
+		{
+			// Include the Stripe library:
+			require_once('stripe/init.php'); // in same folder
+
+			// set your secret key: remember to change this to your live secret key in production
+			\Stripe\Stripe::setApiKey(STRIPE_PRIVATE_KEY); // in config.php
+			
+			// Charge the order:
+			$charge = \Stripe\Charge::create(array(
+				'amount' => 600,
+				'currency' => "EUR",
+				'source' => $token,
+				'receipt_email' => $email,
+				));
+				
+			// Check that it was paid:
+			if ($charge->paid == true)
+			{
+				header('Location: -> Go to finalize purchase
+			}
+			else
+			{ // Charge was not paid!
+				echo '<div class="alert alert-error"><h4>Erreur du système de paiement!</h4>Votre paiement n\'a pas été effectué ( vous n\'avez pas été débité ) parce que le système de paiement à rejeté votre transaction. Vous pouvez essayer à nouveau ou utiliser une autre carte.</div>';
+			}
+			
+		} catch (\Stripe\Error\Card $e) {
+		    // Card was declined.
+			$e_json = $e->getJsonBody();
+			$err = $e_json['error'];
+			$errors['stripe'] = $err['message'];
+		} catch (\Stripe\Error\ApiConnection $e) {
+		    // Network problem, perhaps try again.
+		} catch (\Stripe\Error\InvalidRequest $e) {
+		    // You screwed up in your programming. Shouldn't happen!
+		} catch (\Stripe\Error\Api $e) {
+		    // Stripe's servers are down!
+		} catch (\Stripe\Error\Base $e) {
+		    // Something else that's not the customer's fault.
+		}
+
+	} // A user form submission error occurred, handled below.
+
+} // end form submission.
+
+// Set the Stripe key:
+// Uses STRIPE_PUBLIC_KEY from the config file.
+echo '<script type="text/javascript">Stripe.setPublishableKey("' . STRIPE_PUBLIC_KEY . '");</script>';
+
+// Show PHP errors, if they exist:
+if (isset($errors) && !empty($errors) && is_array($errors))
+{
+	echo '<div class="alert alert-error"><h4>Erreur!</h4>Les erreurs suivantes sont apparues :<ul>';
+	foreach ($errors as $e) {
+		echo "<li>$e</li>";
+	}
+	echo '</ul></div>';
+}
+?>
+
+<!-- text of paiement page -->
+bla bla bla ...
+
+<!-- see page https://stripe.com/docs/checkout -->
+		<form action="paiement.php" method="POST">
+		<label class="label_client">Payez en cliquant ici</label>
+		<script	src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+				data-key="<?php echo STRIPE_PUBLIC_KEY; ?>"
+				data-amount="600"
+				data-name="marie-verveine.com"
+				data-description="Votre panier"
+				data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+				data-locale="auto"
+				data-zip-code="false"
+				data-currency="EUR"
+				data-allow-remember-me="false"
+				data-panel-label="Montant à payer {{amount}}"
+				data-label="Payez ici"
+				data-email="<?php echo $email; ?>">
+		</script>
+		</form>
